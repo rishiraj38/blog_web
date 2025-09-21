@@ -33,6 +33,7 @@ blogRouter.use(async (c, next) => {
 
 blogRouter.post("/", async (c) => {
   const userId = c.get("userId");
+  console.log(userId)
   const prisma = new PrismaClient({
     datasourceUrl:c.env.my_db,
   }).$extends(withAccelerate());
@@ -86,6 +87,8 @@ blogRouter.put("/", async (c) => {
 });
 
 blogRouter.get('/bulk',async (c)=>{
+    const userId = c.get("userId");
+    console.log(userId)
     const prisma = new PrismaClient({
       datasourceUrl:c.env.my_db,
     }).$extends(withAccelerate());
@@ -94,6 +97,7 @@ blogRouter.get('/bulk',async (c)=>{
         content:true,
         title:true,
         id:true,
+        authorId:true,
         author:{
           select:{
             name:true
@@ -106,6 +110,35 @@ blogRouter.get('/bulk',async (c)=>{
         blogs
     })
 })
+
+
+blogRouter.get("/filter", async (c) => {
+  const userId = c.get("userId");
+  console.log(userId);
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.my_db,
+  }).$extends(withAccelerate());
+  const blogs = await prisma.post.findMany({
+    where:{
+      authorId:userId
+    },
+    select: {
+      content: true,
+      title: true,
+      id: true,
+      authorId: true,
+      author: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return c.json({
+    blogs,
+  });
+});
 
 blogRouter.get("/:id", async (c) => {
   const id = c.req.param("id");
@@ -130,4 +163,34 @@ blogRouter.get("/:id", async (c) => {
   });
 
   return c.json(post);
+});
+
+
+
+blogRouter.delete("/:id", async (c) => {
+  const userId = c.get("userId");
+  const id = c.req.param("id");
+
+  const prisma = new PrismaClient({ datasourceUrl: c.env.my_db })
+    .$extends(withAccelerate());
+
+  try {
+    const deletedPost = await prisma.post.deleteMany({
+      where: {
+        id,
+        authorId: userId, 
+      },
+    });
+
+    if (deletedPost.count === 0) {
+      c.status(404);
+      return c.json({ message: "Post not found or unauthorized" });
+    }
+
+    return c.json({ message: "Post deleted" });
+  } catch (e) {
+    console.error(e);
+    c.status(500);
+    return c.json({ message: "Something went wrong" });
+  }
 });

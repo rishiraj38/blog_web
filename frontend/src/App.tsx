@@ -4,11 +4,12 @@ import { Signin } from "./pages/Signin";
 import { Blog } from "./pages/Blog";
 import { Blogs } from "./pages/Blogs";
 import { Publish } from "./pages/Publish";
+import { Dashboard } from "./pages/Dashboard"; 
 import type { JSX } from "react";
 
 // ✅ Protected Route wrapper
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const token = localStorage.getItem("token"); // adjust if you're storing token differently
+  const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/signin" replace />;
 };
 
@@ -28,7 +29,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
 
-        {/* Public Blog Routes */}
+        {/* Public Blog Route */}
         <Route path="/blog/:id" element={<Blog />} />
 
         {/* Protected Routes */}
@@ -45,6 +46,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Publish />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
             </ProtectedRoute>
           }
         />

@@ -17,6 +17,11 @@ export const Appbar = () => {
     navigate("/signin");
   };
 
+  const goToDashboard = () => {
+    setMenuOpen(false); // close dropdown
+    navigate("/dashboard");
+  };
+
   return (
     <div className="sticky top-0 z-50 backdrop-blur-lg bg-white/70 border-b border-gray-200 shadow-md flex justify-between items-center px-8 py-4">
       {/* Brand Logo */}
@@ -58,6 +63,16 @@ export const Appbar = () => {
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
               </div>
+
+              {/* Your Blogs Option */}
+              <button
+                onClick={goToDashboard}
+                className="w-full text-left px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 transition"
+              >
+                Your Blogs
+              </button>
+
+              {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 text-red-600 font-medium hover:bg-red-50 transition"
