@@ -23,6 +23,7 @@ export const useBlog = ({ id }: { id: string }) => {
         },
       })
       .then((response) => {
+        // @ts-expect-error typeerror
         setBlog(response.data);
         setLoading(false);
       });
@@ -46,6 +47,7 @@ export const useBlogs = () => {
         },
       })
       .then((response) => {
+        // @ts-expect-error typeerror
         setBlogs(response.data.blogs);
         setLoading(false);
       });

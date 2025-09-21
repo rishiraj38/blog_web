@@ -4,6 +4,7 @@ import { Signin } from "./pages/Signin";
 import { Blog } from "./pages/Blog";
 import { Blogs } from "./pages/Blogs";
 import { Publish } from "./pages/Publish";
+import type { JSX } from "react";
 
 // ✅ Protected Route wrapper
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
