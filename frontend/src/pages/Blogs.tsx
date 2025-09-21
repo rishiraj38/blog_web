@@ -4,7 +4,6 @@ import { BlogSkeleton } from "../components/BlogSkeleton";
 import { SideBar } from "../components/SideBar";
 import { useBlogs } from "../hooks";
 
-
 export const getRecentDate = () => {
   const today = new Date();
   const past = new Date();

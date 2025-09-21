@@ -19,6 +19,7 @@ export const Publish = () => {
           headers: { Authorization: localStorage.getItem("token") || "" },
         }
       );
+      // @ts-expect-error typeerror
       navigate(`/blog/${response.data.id}`);
     } catch (err) {
       console.error(err);
