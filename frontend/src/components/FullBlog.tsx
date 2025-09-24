@@ -2,23 +2,17 @@ import type { Blog } from "../hooks";
 import { Appbar } from "./Appbar";
 import { Avatar } from "./BlogCard";
 
-// Dynamic recent date
-const getRecentDate = () => {
-  const today = new Date();
-  const past = new Date();
-  past.setDate(today.getDate() - 60); // last 60 days
-  const randomTime = new Date(
-    past.getTime() + Math.random() * (today.getTime() - past.getTime())
-  );
-  return randomTime.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
 export const FullBlog = ({ blog }: { blog: Blog }) => {
-  const publishedDate = getRecentDate();
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const publishedDate = formatDate(blog.createdAt); 
 
   return (
     <div className="bg-white min-h-screen">
@@ -44,7 +38,8 @@ export const FullBlog = ({ blog }: { blog: Blog }) => {
                 </button>
               </div>
               <div className="text-gray-500 text-sm">
-                {publishedDate} · 8 min read
+                {publishedDate} · {Math.ceil(blog.content.length / 100)} min
+                read
               </div>
             </div>
           </div>
