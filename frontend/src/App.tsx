@@ -25,14 +25,13 @@ function App() {
           element={token ? <Navigate to="/blogs" /> : <Navigate to="/signin" />}
         />
 
-        {/* Auth Routes */}
+       
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
 
-        {/* Public Blog Route */}
+      
         <Route path="/blog/:id" element={<Blog />} />
 
-        {/* Protected Routes */}
         <Route
           path="/blogs"
           element={
