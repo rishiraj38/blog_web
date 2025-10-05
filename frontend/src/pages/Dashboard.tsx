@@ -4,7 +4,7 @@ import { Avatar } from "../components/BlogCard";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 interface Author {
   name: string;
@@ -31,6 +31,16 @@ export const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
+  // Edit Profile States
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isPasswordMode, setIsPasswordMode] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  // Fetch blogs + user
   const fetchUserBlogs = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -41,6 +51,8 @@ export const Dashboard = () => {
     try {
       const decoded: User = jwtDecode(token);
       setUser(decoded);
+      setEditName(decoded.name);
+      setEditEmail(decoded.email);
     } catch (e) {
       console.error("Invalid token", e);
     }
@@ -49,10 +61,10 @@ export const Dashboard = () => {
       const response = await axios.get(`${BACKEND_URL}/api/v1/blog/filter`, {
         headers: { Authorization: token },
       });
-      //@ts-expect-error: response.data.blogs type may not match Blog[] due to backend response shape
+      //@ts-expect-error: backend type mismatch
       setBlogs(response.data.blogs || []);
     } catch (error) {
-      console.error("Error fetching your blogs:", error);
+      console.error("Error fetching blogs:", error);
     } finally {
       setLoading(false);
     }
@@ -71,11 +83,10 @@ export const Dashboard = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Delete Blog
   const handleDelete = async (id: string) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -88,6 +99,73 @@ export const Dashboard = () => {
     } catch (error) {
       console.error("Error deleting blog:", error);
     }
+  };
+
+  // Update Profile
+  const handleProfileUpdate = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    setMessage("Updating profile...");
+
+    try {
+      await axios.put(
+        `${BACKEND_URL}/api/v1/user/profile`,
+        { name: editName, email: editEmail },
+        { headers: { Authorization: token } }
+      );
+
+      setUser((prev) =>
+        prev ? { ...prev, name: editName, email: editEmail } : null
+      );
+      setMessage("Profile updated ✅");
+      setTimeout(() => {
+        setIsEditOpen(false);
+        setMessage("");
+      }, 1200);
+      
+    } catch (err) {
+      // console.log(err)
+      setMessage("Failed to update ❌");
+    }
+  };
+
+  // Update Password
+  const handlePasswordUpdate = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    setMessage("Updating password...");
+
+    try {
+      await axios.put(
+        `${BACKEND_URL}/api/v1/user/profile/password`,
+        { oldPassword, newPassword },
+        { headers: { Authorization: token } }
+      );
+      setMessage("Password changed ✅");
+      setTimeout(() => {
+        closeEditModal();
+      }, 1200);
+      
+    } catch (err) {
+      console.log(err)
+      setMessage("Failed to change password ❌");
+    }
+  };
+
+  // Open Modal
+  const openEditProfile = () => {
+    setMessage("");
+    setIsPasswordMode(false);
+    setIsEditOpen(true);
+  };
+
+  // Close Modal
+  const closeEditModal = () => {
+    setIsEditOpen(false);
+    setIsPasswordMode(false);
+    setOldPassword("");
+    setNewPassword("");
+    setMessage("");
   };
 
   if (loading) {
@@ -111,7 +189,10 @@ export const Dashboard = () => {
             <Avatar size="big" name={user.name[0]} />
             <p className="text-2xl font-bold mt-3 text-gray-900">{user.name}</p>
             <p className="text-gray-500 text-sm">{user.email}</p>
-            <button className="mt-2 px-5 py-1 rounded-full border border-gray-300 hover:bg-gray-100 transition cursor-pointer">
+            <button
+              onClick={openEditProfile}
+              className="mt-3 px-5 py-1.5 text-sm rounded-full border border-gray-300 hover:bg-gray-100 transition cursor-pointer"
+            >
               Edit Profile
             </button>
           </div>
@@ -147,7 +228,6 @@ export const Dashboard = () => {
                   </div>
                 </div>
 
-                {/* Three-dot dropdown */}
                 <div className="absolute top-4 right-4" ref={dropdownRef}>
                   <button
                     onClick={() =>
@@ -177,6 +257,105 @@ export const Dashboard = () => {
           </ul>
         )}
       </div>
+
+      {/* 🌫️ Edit Profile / Change Password Modal */}
+      {isEditOpen && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-black/40 z-50 transition">
+          <div className="bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl rounded-2xl p-6 w-[90%] max-w-md text-white">
+            <h2 className="text-2xl font-semibold mb-5 text-center">
+              {isPasswordMode ? "Change Password" : "Edit Profile"}
+            </h2>
+
+            {!isPasswordMode ? (
+              <>
+                <input
+                  className="w-full px-3 py-2 mb-3 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  placeholder="Name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
+                <input
+                  className="w-full px-3 py-2 mb-5 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  placeholder="Email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                />
+              </>
+            ) : (
+              <>
+                <input
+                  className="w-full px-3 py-2 mb-3 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  type="password"
+                  placeholder="Old Password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                />
+                <input
+                  className="w-full px-3 py-2 mb-5 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  type="password"
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </>
+            )}
+
+            {message && (
+              <p className="text-sm text-center text-gray-200 mt-2">
+                {message}
+              </p>
+            )}
+
+            <div className="flex justify-between mt-5 gap-3">
+              {!isPasswordMode ? (
+                <>
+                  <button
+                    onClick={handleProfileUpdate}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsPasswordMode(true);
+                      setMessage("");
+                    }}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    Change Password
+                  </button>
+                  <button
+                    onClick={closeEditModal}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handlePasswordUpdate}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    Update
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsPasswordMode(false);
+                      setOldPassword("");
+                      setNewPassword("");
+                      setMessage("");
+                    }}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    Back
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
