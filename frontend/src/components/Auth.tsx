@@ -23,7 +23,7 @@ export const Auth = ({ type }: { type: "signup" | "signin" }) => {
   }, [navigate]);
 
   async function sendRequest() {
-    if (loading) return; // prevent duplicate clicks
+    if (loading) return; 
     setLoading(true);
     setError(null);
 

@@ -12,7 +12,7 @@ export const Blogs = () => {
   const [sortOption, setSortOption] = useState("newest");
 
   const filteredSortedBlogs = useMemo(() => {
-    let filtered = blogs.filter(
+    const filtered = blogs.filter(
       (blog) =>
         blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         blog.content.toLowerCase().includes(searchTerm.toLowerCase())
