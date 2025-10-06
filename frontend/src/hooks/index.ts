@@ -10,6 +10,9 @@ export interface Blog {
   author: {
     name: string;
   };
+  _count?: {
+    comments: number;
+  };
 }
 
 export const useBlog = ({ id }: { id: string }) => {

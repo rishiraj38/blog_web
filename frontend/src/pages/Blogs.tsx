@@ -97,7 +97,8 @@ export const Blogs = () => {
                   authorName={blog.author.name || "Anonymous"}
                   title={blog.title}
                   content={blog.content}
-                  publishedDate={formatDate(blog.createdAt)} // use createdAt
+                  publishedDate={formatDate(blog.createdAt)}
+                  commentCount={blog._count?.comments || 0}
                 />
               ))}
             </div>
