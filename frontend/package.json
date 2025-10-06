@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@rishi438/zod": "^1.0.1",
     "@tailwindcss/vite": "^4.1.13",
     "axios": "^1.12.2",
