@@ -49,12 +49,10 @@ export const Blogs = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navbar */}
       <Appbar />
 
       <div className="flex justify-center px-6 py-8">
         <main className="flex-1 max-w-3xl">
-          {/* Search and Sort */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
             <input
               type="text"
@@ -81,8 +79,6 @@ export const Blogs = () => {
               <BlogSkeleton />
               <BlogSkeleton />
               <BlogSkeleton />
-              <BlogSkeleton />
-              <BlogSkeleton />
             </div>
           ) : filteredSortedBlogs.length === 0 ? (
             <p className="text-gray-500 mt-4 text-center">
@@ -90,17 +86,26 @@ export const Blogs = () => {
             </p>
           ) : (
             <div className="grid gap-6">
-              {filteredSortedBlogs.map((blog) => (
-                <BlogCard
-                  key={blog.id}
-                  id={blog.id}
-                  authorName={blog.author.name || "Anonymous"}
-                  title={blog.title}
-                  content={blog.content}
-                  publishedDate={formatDate(blog.createdAt)}
-                  commentCount={blog._count?.comments || 0}
-                />
-              ))}
+              {filteredSortedBlogs.map((blog) => {
+                const reactions = blog.reactionCounts || {
+                  likes: 0,
+                  dislikes: 0,
+                };
+
+                return (
+                  <BlogCard
+                    key={blog.id}
+                    id={blog.id}
+                    authorName={blog.author.name || "Anonymous"}
+                    title={blog.title}
+                    content={blog.content}
+                    publishedDate={formatDate(blog.createdAt)}
+                    commentCount={blog.commentCount || 0} // updated
+                    likeCount={reactions.likes}
+                    dislikeCount={reactions.dislikes}
+                  />
+                );
+              })}
             </div>
           )}
         </main>

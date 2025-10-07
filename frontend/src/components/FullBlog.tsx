@@ -2,6 +2,7 @@ import type { Blog } from "../hooks";
 import { Appbar } from "./Appbar";
 import { Avatar } from "./BlogCard";
 import { Comments } from "./Comments";
+import { Reaction } from "./Reaction"; 
 
 export const FullBlog = ({ blog }: { blog: Blog }) => {
   const formatDate = (dateStr: string) => {
@@ -13,7 +14,7 @@ export const FullBlog = ({ blog }: { blog: Blog }) => {
     });
   };
 
-  const publishedDate = formatDate(blog.createdAt); 
+  const publishedDate = formatDate(blog.createdAt);
 
   return (
     <div className="bg-white min-h-screen">
@@ -46,9 +47,14 @@ export const FullBlog = ({ blog }: { blog: Blog }) => {
           </div>
 
           {/* Blog Content */}
-          <div className="prose prose-lg max-w-none text-gray-800 leading-relaxed">
+          <div className="prose prose-lg max-w-none text-gray-800 leading-relaxed mb-6">
             {blog.content}
           </div>
+
+          {/* Reaction Buttons */}
+          <Reaction postId={blog.id} />
+
+          {/* Comments */}
           <Comments blogId={blog.id} />
         </div>
       </div>
