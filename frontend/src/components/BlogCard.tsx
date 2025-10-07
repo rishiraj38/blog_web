@@ -1,5 +1,9 @@
 import { Link } from "react-router-dom";
-import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline"; 
+import {
+  ChatBubbleLeftIcon,
+  HandThumbDownIcon,
+  HandThumbUpIcon,
+} from "@heroicons/react/24/outline";
 
 interface BlogCardProps {
   authorName: string;
@@ -7,7 +11,9 @@ interface BlogCardProps {
   content: string;
   publishedDate: string;
   id: string;
-  commentCount?: number; // added comment count
+  commentCount?: number;
+  likeCount?: number;
+  dislikeCount?: number;
 }
 
 export const BlogCard = ({
@@ -16,11 +22,13 @@ export const BlogCard = ({
   title,
   content,
   publishedDate,
-  commentCount = 0, // default 0
+  commentCount = 0,
+  likeCount = 0,
+  dislikeCount = 0,
 }: BlogCardProps) => {
   return (
     <Link to={`/blog/${id}`}>
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 w-full max-w-2xl mx-auto mb-6 transition hover:shadow-md cursor-pointer">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 w-full max-w-2xl mx-auto mb-6 transition-transform hover:shadow-md hover:-translate-y-1 cursor-pointer">
         <div className="flex items-center space-x-3 mb-4">
           <Avatar name={authorName} />
           <span className="text-sm text-gray-700 font-medium">
@@ -29,18 +37,31 @@ export const BlogCard = ({
           <Circle />
           <span className="text-sm text-gray-500">{publishedDate}</span>
         </div>
+
         <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
           {title}
         </h2>
+
         <p className="text-gray-600 text-md font-light line-clamp-3">
-          {content.slice(0, 120) + "..."}
+          {content}
         </p>
+
         <div className="flex justify-between items-center pt-4 text-gray-500 text-sm font-light">
-          <span>{`${Math.ceil(content.length / 100)} minute(s) read`}</span>
-          <span className="flex items-center gap-1">
-            <ChatBubbleLeftIcon className="w-4 h-4" />
-            {commentCount}
-          </span>
+          <span>{`${Math.ceil(content.length / 100)} min read`}</span>
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <ChatBubbleLeftIcon className="w-4 h-4" />
+              {commentCount}
+            </span>
+            <span className="flex items-center gap-1">
+              <HandThumbUpIcon className="w-4 h-4" />
+              {likeCount}
+            </span>
+            <span className="flex items-center gap-1">
+              <HandThumbDownIcon className="w-4 h-4" />
+              {dislikeCount}
+            </span>
+          </div>
         </div>
       </div>
     </Link>
@@ -52,10 +73,10 @@ export function Circle() {
 }
 
 export function Avatar({
-  name,
+  name = "A",
   size = "small",
 }: {
-  name: string;
+  name?: string;
   size?: "small" | "big";
 }) {
   return (
@@ -69,7 +90,7 @@ export function Avatar({
           size === "small" ? "text-sm" : "text-lg"
         } font-semibold text-white`}
       >
-        {name[0].toUpperCase()}
+        {name[0]?.toUpperCase() || "A"}
       </span>
     </div>
   );
