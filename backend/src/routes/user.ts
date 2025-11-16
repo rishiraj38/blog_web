@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { sign, verify } from "hono/jwt";
 import { signupInput, signinInput } from "@rishi438/zod";
+import bcrypt from "bcryptjs"; // Change 1
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -11,10 +12,9 @@ export const userRouter = new Hono<{
     my_db: string;
   };
   Variables: {
-    userId: string; 
+    userId: string;
   };
 }>();
-
 
 userRouter.post("/signup", async (c) => {
   const prisma = new PrismaClient({ datasourceUrl: c.env.my_db }).$extends(
@@ -29,10 +29,12 @@ userRouter.post("/signup", async (c) => {
   }
 
   try {
+    const hashedPassword = await bcrypt.hash(body.password, 10); // Change 2
+
     const user = await prisma.user.create({
       data: {
         email: body.email,
-        password: body.password, 
+        password: hashedPassword, // Change 3
         name: body.name,
       },
     });
@@ -68,10 +70,16 @@ userRouter.post("/signin", async (c) => {
 
   try {
     const user = await prisma.user.findFirst({
-      where: { email: body.email, password: body.password },
+      where: { email: body.email },
     });
 
     if (!user) {
+      c.status(403);
+      return c.json({ message: "Incorrect credentials" });
+    }
+
+    const isValid = await bcrypt.compare(body.password, user.password);
+    if (!isValid) {
       c.status(403);
       return c.json({ message: "Incorrect credentials" });
     }
@@ -154,14 +162,17 @@ userRouter.put("/profile/password", async (c) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
-    if (!user || user.password !== oldPassword) {
+    const oldMatch = await bcrypt.compare(oldPassword, user.password); // Change 5
+    if (!oldMatch) {
       c.status(403);
       return c.json({ error: "Old password is incorrect" });
     }
 
+    const newHashed = await bcrypt.hash(newPassword, 10); // Change 6
+
     await prisma.user.update({
       where: { id: userId },
-      data: { password: newPassword },
+      data: { password: newHashed }, // Change 7
     });
 
     return c.json({ message: "Password updated successfully" });
