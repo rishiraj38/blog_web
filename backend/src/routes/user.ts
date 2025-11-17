@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { sign, verify } from "hono/jwt";
 import { signupInput, signinInput } from "@rishi438/zod";
-import bcrypt from "bcryptjs"; // Change 1
+import bcrypt from "bcryptjs";
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -29,12 +29,12 @@ userRouter.post("/signup", async (c) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(body.password, 10); // Change 2
+    const hashedPassword = await bcrypt.hash(body.password, 10);
 
     const user = await prisma.user.create({
       data: {
         email: body.email,
-        password: hashedPassword, // Change 3
+        password: hashedPassword,
         name: body.name,
       },
     });
@@ -44,10 +44,12 @@ userRouter.post("/signup", async (c) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
       },
       c.env.JWT_SECRET
     );
 
+    c.header("Authorization", jwt);
     return c.text(jwt);
   } catch (e) {
     console.error(e);
@@ -85,10 +87,16 @@ userRouter.post("/signin", async (c) => {
     }
 
     const jwt = await sign(
-      { id: user.id, email: user.email, name: user.name },
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
+      },
       c.env.JWT_SECRET
     );
 
+    c.header("Authorization", jwt);
     return c.json(jwt);
   } catch (e) {
     console.error(e);
@@ -162,17 +170,17 @@ userRouter.put("/profile/password", async (c) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
-    const oldMatch = await bcrypt.compare(oldPassword, user.password); // Change 5
+    const oldMatch = await bcrypt.compare(oldPassword, user.password);
     if (!oldMatch) {
       c.status(403);
       return c.json({ error: "Old password is incorrect" });
     }
 
-    const newHashed = await bcrypt.hash(newPassword, 10); // Change 6
+    const newHashed = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
       where: { id: userId },
-      data: { password: newHashed }, // Change 7
+      data: { password: newHashed },
     });
 
     return c.json({ message: "Password updated successfully" });
