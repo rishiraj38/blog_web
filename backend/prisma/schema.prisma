@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,44 +11,51 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique
-  name     String?
-  password String
-  posts    Post[]
-  comments Comment[]
-  reactions  PostReaction[]
+  id        String         @id @default(uuid())
+  email     String         @unique
+  name      String?
+  password  String
+  avatar    String?       
+  posts     Post[]
+  comments  Comment[]
+  reactions PostReaction[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 model Post {
-  id        String   @id @default(uuid())
+  id        String         @id @default(uuid())
   title     String
   content   String
-  published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
+  imageUrl  String?        
+  published Boolean        @default(false)
+  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
-  createdAt DateTime @default(now())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   comments  Comment[]
-  reactions  PostReaction[]
+  reactions PostReaction[]
 }
 
 model Comment {
   id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id])
+  updatedAt DateTime @updatedAt @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
-  author    User?    @relation(fields: [authorId], references: [id])
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String?
 }
 
 model PostReaction {
   id        String   @id @default(uuid())
   type      String   
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
   createdAt DateTime @default(now())
-  @@unique([userId, postId]) 
+  
+  @@unique([userId, postId])
 }
