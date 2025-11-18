@@ -29,7 +29,7 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Edit Profile States
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -74,10 +74,10 @@ export const Dashboard = () => {
     fetchUserBlogs();
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      const clickedOutside = Object.values(dropdownRefs.current).every(
+        (ref) => ref && !ref.contains(event.target as Node)
+      );
+      if (clickedOutside) {
         setMenuOpen(null);
       }
     };
@@ -86,8 +86,12 @@ export const Dashboard = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Delete Blog
+  // Delete Blog with confirmation
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this blog?")) {
+      return;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) return;
 
@@ -96,8 +100,11 @@ export const Dashboard = () => {
         headers: { Authorization: token },
       });
       setBlogs((prev) => prev.filter((b) => b.id !== id));
+      setMenuOpen(null); // Close dropdown after deletion
+      alert("Blog deleted successfully!");
     } catch (error) {
       console.error("Error deleting blog:", error);
+      alert("Failed to delete blog. Please try again.");
     }
   };
 
@@ -122,9 +129,8 @@ export const Dashboard = () => {
         setIsEditOpen(false);
         setMessage("");
       }, 1200);
-      
     } catch (err) {
-      // console.log(err)
+      console.error(err);
       setMessage("Failed to update ❌");
     }
   };
@@ -145,9 +151,8 @@ export const Dashboard = () => {
       setTimeout(() => {
         closeEditModal();
       }, 1200);
-      
     } catch (err) {
-      console.log(err)
+      console.error(err);
       setMessage("Failed to change password ❌");
     }
   };
@@ -166,6 +171,16 @@ export const Dashboard = () => {
     setOldPassword("");
     setNewPassword("");
     setMessage("");
+  };
+
+  // Strip HTML tags for preview
+  const getTextPreview = (html: string, maxLength: number = 150): string => {
+    const temp = document.createElement("div");
+    temp.innerHTML = html;
+    const text = temp.textContent || temp.innerText || "";
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
   };
 
   if (loading) {
@@ -220,7 +235,7 @@ export const Dashboard = () => {
                       {blog.title}
                     </h2>
                     <p className="text-gray-600 mt-2 text-sm md:text-base">
-                      {blog.content.slice(0, 150)}...
+                      {getTextPreview(blog.content)}
                     </p>
                     <p className="text-gray-400 text-xs mt-2">
                       By {blog.author.name}
@@ -228,24 +243,41 @@ export const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className="absolute top-4 right-4" ref={dropdownRef}>
+                {/* Dropdown Menu */}
+                <div
+                  className="absolute top-4 right-4"
+                  ref={(el) => (dropdownRefs.current[blog.id] = el)}
+                >
                   <button
-                    onClick={() =>
-                      setMenuOpen(menuOpen === blog.id ? null : blog.id)
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(menuOpen === blog.id ? null : blog.id);
+                    }}
                     className="px-2 py-1 rounded hover:bg-gray-200 transition cursor-pointer text-lg font-bold"
+                    aria-label="More options"
                   >
                     &#x22EE;
                   </button>
 
                   {menuOpen === blog.id && (
                     <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-100 transition cursor-pointer">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Add edit functionality here
+                          console.log("Edit blog:", blog.id);
+                          setMenuOpen(null);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition cursor-pointer rounded-t-lg"
+                      >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(blog.id)}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(blog.id);
+                        }}
+                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition cursor-pointer rounded-b-lg"
                       >
                         Delete
                       </button>
