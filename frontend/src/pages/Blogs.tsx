@@ -4,20 +4,40 @@ import { BlogSkeleton } from "../components/BlogSkeleton";
 import { SideBar } from "../components/SideBar";
 import { useBlogs } from "../hooks";
 import { useState, useMemo } from "react";
-import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  Squares2X2Icon,
+  ListBulletIcon,
+} from "@heroicons/react/24/outline";
 
 export const Blogs = () => {
   const { loading, blogs } = useBlogs();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("newest");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const categories = [
+    "All",
+    "Technology",
+    "Design",
+    "Writing",
+    "Business",
+    "Health",
+    "Science",
+  ];
 
   const filteredSortedBlogs = useMemo(() => {
-    const filtered = blogs.filter(
+    let filtered = blogs.filter(
       (blog) =>
         blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         blog.content.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Note: Category filtering would need backend support
+    // For now, we'll skip it but keep the UI
 
     filtered.sort((a, b) => {
       if (sortOption === "newest") {
@@ -49,70 +69,142 @@ export const Blogs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <Appbar />
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex flex-col lg:flex-row gap-12">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+            Discover Stories
+          </h1>
+          <p className="text-blue-100 text-base">
+            Explore thoughtful articles and insights from writers around the world.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Feed */}
           <main className="flex-1">
-            {/* Floating Search & Filter Bar */}
-            <div className="sticky top-24 z-30 mb-10">
-              <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/40 dark:border-slate-800 shadow-lg shadow-slate-200/50 dark:shadow-none rounded-2xl p-2 flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search for stories..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none font-medium"
-                  />
-                </div>
-                <div className="relative min-w-[200px] border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800">
-                  <FunnelIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <select
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-transparent text-slate-700 dark:text-slate-300 font-medium focus:outline-none appearance-none cursor-pointer"
+            {/* Category Pills */}
+            <div className="mb-6 overflow-x-auto">
+              <div className="flex gap-2 pb-2">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() =>
+                      setSelectedCategory(
+                        category === "All" ? null : category
+                      )
+                    }
+                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                      (category === "All" && !selectedCategory) ||
+                      selectedCategory === category
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
                   >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="titleAsc">Title A → Z</option>
-                    <option value="titleDesc">Title Z → A</option>
-                  </select>
-                  {/* Custom arrow for dark mode support if needed, but default select arrow usually adapts or is hidden by appearance-none. 
-                      However, we need to ensure options have background in dark mode since they might be transparent otherwise on some browsers. */}
-                  <style>{`
-                    option {
-                      background-color: var(--bg-option, #fff);
-                      color: var(--text-option, #000);
-                    }
-                    .dark option {
-                      background-color: #0f172a;
-                      color: #fff;
-                    }
-                  `}</style>
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Search, Filter & View Toggle Bar */}
+            <div className="sticky top-20 z-30 mb-8">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* Search */}
+                  <div className="relative flex-1">
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search stories..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 border-0 font-medium text-sm"
+                    />
+                  </div>
+
+                  {/* Sort */}
+                  <div className="relative min-w-[180px]">
+                    <FunnelIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                    <select
+                      value={sortOption}
+                      onChange={(e) => setSortOption(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer border-0"
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                      <option value="titleAsc">Title A → Z</option>
+                      <option value="titleDesc">Title Z → A</option>
+                    </select>
+                  </div>
+
+                  {/* View Toggle */}
+                  <div className="flex gap-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-lg">
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`p-2 rounded-md transition-all ${
+                        viewMode === "list"
+                          ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-500 shadow-sm"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                      }`}
+                      title="List view"
+                    >
+                      <ListBulletIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`p-2 rounded-md transition-all ${
+                        viewMode === "grid"
+                          ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-500 shadow-sm"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                      }`}
+                      title="Grid view"
+                    >
+                      <Squares2X2Icon className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Blog Content */}
             {loading ? (
-              <div className="grid gap-8">
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 gap-5"
+                    : "space-y-5"
+                }
+              >
                 <BlogSkeleton />
                 <BlogSkeleton />
                 <BlogSkeleton />
               </div>
             ) : filteredSortedBlogs.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <MagnifyingGlassIcon className="w-8 h-8 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No stories found</h3>
-                <p className="text-slate-500 dark:text-slate-400">Try adjusting your search or filters.</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  No stories found
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Try adjusting your search or filters.
+                </p>
               </div>
             ) : (
-              <div className="grid gap-8">
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 gap-5"
+                    : "space-y-5"
+                }
+              >
                 {filteredSortedBlogs.map((blog) => {
                   const reactions = blog.reactionCounts || {
                     likes: 0,
@@ -130,6 +222,7 @@ export const Blogs = () => {
                       commentCount={blog.commentCount || 0}
                       likeCount={reactions.likes}
                       dislikeCount={reactions.dislikes}
+                      variant={viewMode}
                     />
                   );
                 })}
@@ -139,7 +232,7 @@ export const Blogs = () => {
 
           {/* Sidebar (Hidden on mobile) */}
           <div className="hidden lg:block w-80 shrink-0">
-            <div className="sticky top-32">
+            <div className="sticky top-28">
               <SideBar blogs={blogs} loading={loading} />
             </div>
           </div>
