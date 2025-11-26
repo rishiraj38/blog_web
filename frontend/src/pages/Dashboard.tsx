@@ -239,7 +239,7 @@ export const Dashboard = () => {
         {user && (
           <div className="bg-white dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center gap-8 mb-12 relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-600" />
-            <Avatar size="big" name={user.name[0]} avatar={user.avatar} />
+            <Avatar size="big" name={user.name[0]}  />
             <div className="text-center md:text-left flex-1">
               <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">{user.name}</h1>
               <p className="text-slate-500 dark:text-slate-400 mb-4">{user.email}</p>

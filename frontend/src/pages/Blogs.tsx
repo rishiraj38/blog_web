@@ -130,8 +130,6 @@ export const Blogs = () => {
                       commentCount={blog.commentCount || 0}
                       likeCount={reactions.likes}
                       dislikeCount={reactions.dislikes}
-                      imageUrl={blog.imageUrl}
-                      avatar={blog.author.avatar}
                     />
                   );
                 })}
