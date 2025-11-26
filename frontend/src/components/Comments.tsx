@@ -84,10 +84,6 @@ export const Comments = ({ blogId }: { blogId: string }) => {
   };
 
   // Function to generate initials avatar if no image
-  const getInitials = (name?: string) => {
-    if (!name) return "A";
-    return name.charAt(0).toUpperCase();
-  };
 
   return (
     <div className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-8">
@@ -120,7 +116,7 @@ export const Comments = ({ blogId }: { blogId: string }) => {
             >
               {/* Avatar */}
               <div className="flex-shrink-0">
-                <Avatar name={c.author?.name || "A"} avatar={c.author?.avatarUrl} size="small" />
+                <Avatar name={c.author?.name || "A"} size="small" />
               </div>
 
               {/* Comment Content */}

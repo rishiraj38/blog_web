@@ -31,7 +31,7 @@ export const FullBlog = ({ blog }: { blog: Blog }) => {
 
               {/* Author + Meta Info */}
               <div className="flex items-center gap-4 mb-12 pb-8 border-b border-slate-100 dark:border-slate-700">
-                <Avatar size="big" name={blog.author.name || "Anonymous"} avatar={blog.author.avatar} />
+                <Avatar size="big" name={blog.author.name || "Anonymous"}  />
                 <div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-slate-900 dark:text-white text-lg">

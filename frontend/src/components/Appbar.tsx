@@ -94,14 +94,14 @@ export const Appbar = () => {
             className="cursor-pointer hover:scale-105 transition-transform duration-200"
             onClick={() => setMenuOpen((prev) => !prev)}
           >
-            {user && <Avatar size={"big"} name={user.name[0]} avatar={user.avatar} />}
+            {user && <Avatar size={"big"} name={user.name[0]}  />}
           </div>
 
           {/* Dropdown Menu */}
           {menuOpen && user && (
             <div className="absolute right-0 mt-4 w-64 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/40 dark:border-slate-700 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden z-50 animate-fade-in-up">
               <div className="flex items-center space-x-3 px-5 py-4 bg-slate-50/50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
-                <Avatar size={"small"} name={user.name[0]} avatar={user.avatar} />
+                <Avatar size={"small"} name={user.name[0]}  />
                 <div className="overflow-hidden">
                   <p className="font-bold text-slate-900 dark:text-white truncate">{user.name}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>

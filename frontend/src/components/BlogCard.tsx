@@ -14,8 +14,6 @@ interface BlogCardProps {
   commentCount?: number;
   likeCount?: number;
   dislikeCount?: number;
-  imageUrl?: string;
-  avatar?: string;
 }
 
 export const BlogCard = ({
@@ -27,54 +25,42 @@ export const BlogCard = ({
   commentCount = 0,
   likeCount = 0,
   dislikeCount = 0,
-  imageUrl,
-  avatar,
 }: BlogCardProps) => {
   return (
-    <Link to={`/blog/${id}`} className="block group">
-      <div className="bg-white dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-md border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-500/50 relative overflow-hidden group">
-        <div className="p-8">
-          {/* Decorative gradient blob */}
-          <div className="absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br from-blue-50 to-blue-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+    <Link to={`/blog/${id}`}>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 w-full max-w-2xl mx-auto mb-6 transition-transform hover:shadow-md hover:-translate-y-1 cursor-pointer">
+        <div className="flex items-center space-x-3 mb-4">
+          <Avatar name={authorName} />
+          <span className="text-sm text-gray-700 font-medium">
+            {authorName}
+          </span>
+          <Circle />
+          <span className="text-sm text-gray-500">{publishedDate}</span>
+        </div>
 
-          <div className="relative z-10">
-            <div className="flex items-center space-x-3 mb-6">
-              <Avatar name={authorName} avatar={avatar} />
-              <div className="flex flex-col">
-                <span className="text-sm text-slate-900 dark:text-slate-200 font-bold">
-                  {authorName}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">{publishedDate}</span>
-              </div>
-            </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+          {title}
+        </h2>
 
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3 line-clamp-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
-              {title}
-            </h2>
+        <p className="text-gray-600 text-md font-light line-clamp-3">
+          {content}
+        </p>
 
-            <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed line-clamp-3 mb-6 font-medium">
-              {content}
-            </p>
-
-            <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800/50">
-              <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/50 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                {`${Math.ceil(content.length / 100)} min read`}
-              </span>
-              <div className="flex items-center gap-5 text-slate-400">
-                <span className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-                  <ChatBubbleLeftIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">{commentCount}</span>
-                </span>
-                <span className="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
-                  <HandThumbUpIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">{likeCount}</span>
-                </span>
-                <span className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
-                  <HandThumbDownIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">{dislikeCount}</span>
-                </span>
-              </div>
-            </div>
+        <div className="flex justify-between items-center pt-4 text-gray-500 text-sm font-light">
+          <span>{`${Math.ceil(content.length / 100)} min read`}</span>
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <ChatBubbleLeftIcon className="w-4 h-4" />
+              {commentCount}
+            </span>
+            <span className="flex items-center gap-1">
+              <HandThumbUpIcon className="w-4 h-4" />
+              {likeCount}
+            </span>
+            <span className="flex items-center gap-1">
+              <HandThumbDownIcon className="w-4 h-4" />
+              {dislikeCount}
+            </span>
           </div>
         </div>
       </div>
@@ -82,34 +68,28 @@ export const BlogCard = ({
   );
 };
 
-
+export function Circle() {
+  return <div className="h-1.5 w-1.5 rounded-full bg-gray-400"></div>;
+}
 
 export function Avatar({
   name = "A",
   size = "small",
-  avatar,
 }: {
   name?: string;
   size?: "small" | "big";
-  avatar?: string;
 }) {
-  const sizeClasses = size === "small" ? "w-8 h-8 text-sm" : "w-12 h-12 text-lg";
-
-  if (avatar) {
-    return (
-      <div
-        className={`relative inline-flex items-center justify-center overflow-hidden rounded-full ${sizeClasses}`}
-      >
-        <img src={avatar} alt={name} className="w-full h-full object-cover" />
-      </div>
-    );
-  }
-
   return (
     <div
-      className={`relative inline-flex items-center justify-center overflow-hidden rounded-full ${sizeClasses} bg-blue-600`}
+      className={`relative inline-flex items-center justify-center overflow-hidden rounded-full ${
+        size === "small" ? "w-8 h-8" : "w-12 h-12"
+      } bg-gradient-to-r from-blue-500 to-cyan-400`}
     >
-      <span className="font-semibold text-white">
+      <span
+        className={`${
+          size === "small" ? "text-sm" : "text-lg"
+        } font-semibold text-white`}
+      >
         {name[0]?.toUpperCase() || "A"}
       </span>
     </div>
