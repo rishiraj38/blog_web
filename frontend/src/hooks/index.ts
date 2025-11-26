@@ -7,10 +7,12 @@ export interface Blog {
   title: string;
   content: string;
   createdAt: string;
+  imageUrl?: string;
   author: {
     name: string;
+    avatar?: string;
   };
-  commentCount: number; 
+  commentCount: number;
   reactionCounts: {
     likes: number;
     dislikes: number;

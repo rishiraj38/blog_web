@@ -144,7 +144,7 @@ userRouter.put("/profile", async (c) => {
         ...(name && { name }),
         ...(email && { email }),
       },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, avatar: true },
     });
 
     return c.json({ message: "Profile updated", user: updatedUser });
@@ -169,6 +169,11 @@ userRouter.put("/profile/password", async (c) => {
 
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      c.status(404);
+      return c.json({ error: "User not found" });
+    }
 
     const oldMatch = await bcrypt.compare(oldPassword, user.password);
     if (!oldMatch) {

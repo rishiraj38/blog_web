@@ -51,6 +51,7 @@ blogRouter.post("/", async (c) => {
     data: {
       title: body.title,
       content: body.content,
+      imageUrl: body.imageUrl,
       authorId: userId,
     },
   });
@@ -80,6 +81,7 @@ blogRouter.put("/", async (c) => {
     data: {
       title: body.title,
       content: body.content,
+      imageUrl: body.imageUrl, // Added imageUrl
     },
   });
 
@@ -98,8 +100,9 @@ blogRouter.get("/bulk", async (c) => {
       id: true,
       title: true,
       content: true,
+      imageUrl: true, // Added imageUrl
       createdAt: true,
-      author: { select: { name: true } },
+      author: { select: { name: true, avatar: true } }, // Added avatar
       comments: true, // for comment count
       reactions: { select: { type: true } }, // for reaction counts
     },
@@ -116,6 +119,7 @@ blogRouter.get("/bulk", async (c) => {
       id: post.id,
       title: post.title,
       content: post.content,
+      imageUrl: post.imageUrl, // Added imageUrl
       createdAt: post.createdAt,
       author: post.author,
       commentCount: post.comments.length,
@@ -143,9 +147,10 @@ blogRouter.get("/filter", async (c) => {
       content: true,
       title: true,
       id: true,
+      imageUrl: true, // Added imageUrl
       authorId: true,
       createdAt: true,
-      author: { select: { name: true } },
+      author: { select: { name: true, avatar: true } }, // Added avatar
     },
   });
 
