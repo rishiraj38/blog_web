@@ -1,13 +1,16 @@
 import { Appbar } from "../components/Appbar";
+import { useNavigate } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
 import { Avatar } from "../components/BlogCard";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type ChangeEvent } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { jwtDecode } from "jwt-decode";
+import { Upload, X } from "lucide-react";
 
 interface Author {
   name: string;
+  avatar?: string;
 }
 
 interface Blog {
@@ -16,15 +19,18 @@ interface Blog {
   content: string;
   authorId: string;
   author: Author;
+  createdAt: string;
 }
 
 interface User {
   id: string;
   name: string;
   email: string;
+  avatar?: string;
 }
 
 export const Dashboard = () => {
+  const navigate = useNavigate();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -36,6 +42,8 @@ export const Dashboard = () => {
   const [isPasswordMode, setIsPasswordMode] = useState(false);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [editAvatar, setEditAvatar] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -53,6 +61,10 @@ export const Dashboard = () => {
       setUser(decoded);
       setEditName(decoded.name);
       setEditEmail(decoded.email);
+      if (decoded.avatar) {
+        setEditAvatar(decoded.avatar);
+        setAvatarPreview(decoded.avatar);
+      }
     } catch (e) {
       console.error("Invalid token", e);
     }
@@ -108,6 +120,25 @@ export const Dashboard = () => {
     }
   };
 
+  // Handle Avatar Upload
+  const handleAvatarUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setEditAvatar(base64String);
+      setAvatarPreview(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAvatar = () => {
+    setEditAvatar("");
+    setAvatarPreview("");
+  };
+
   // Update Profile
   const handleProfileUpdate = async () => {
     const token = localStorage.getItem("token");
@@ -117,12 +148,12 @@ export const Dashboard = () => {
     try {
       await axios.put(
         `${BACKEND_URL}/api/v1/user/profile`,
-        { name: editName, email: editEmail },
+        { name: editName, email: editEmail, avatar: editAvatar },
         { headers: { Authorization: token } }
       );
 
       setUser((prev) =>
-        prev ? { ...prev, name: editName, email: editEmail } : null
+        prev ? { ...prev, name: editName, email: editEmail, avatar: editAvatar } : null
       );
       setMessage("Profile updated ✅");
       setTimeout(() => {
@@ -162,6 +193,12 @@ export const Dashboard = () => {
     setMessage("");
     setIsPasswordMode(false);
     setIsEditOpen(true);
+    if (user) {
+      setEditName(user.name);
+      setEditEmail(user.email);
+      setEditAvatar(user.avatar || "");
+      setAvatarPreview(user.avatar || "");
+    }
   };
 
   // Close Modal
@@ -185,7 +222,7 @@ export const Dashboard = () => {
 
   if (loading) {
     return (
-      <div>
+      <div className="dark:bg-slate-900 min-h-screen">
         <Appbar />
         <div className="h-screen flex flex-col justify-center items-center">
           <Spinner />
@@ -195,94 +232,114 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Appbar />
-      <div className="p-6 max-w-5xl mx-auto">
+      <div className="p-6 max-w-6xl mx-auto py-12">
         {/* Profile section */}
         {user && (
-          <div className="flex flex-col items-center mb-10">
-            <Avatar size="big" name={user.name[0]} />
-            <p className="text-2xl font-bold mt-3 text-gray-900">{user.name}</p>
-            <p className="text-gray-500 text-sm">{user.email}</p>
-            <button
-              onClick={openEditProfile}
-              className="mt-3 px-5 py-1.5 text-sm rounded-full border border-gray-300 hover:bg-gray-100 transition cursor-pointer"
-            >
-              Edit Profile
-            </button>
+          <div className="bg-white dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center gap-8 mb-12 relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-600" />
+            <Avatar size="big" name={user.name[0]} avatar={user.avatar} />
+            <div className="text-center md:text-left flex-1">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">{user.name}</h1>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">{user.email}</p>
+              <div className="flex gap-3 justify-center md:justify-start">
+                <button
+                  onClick={openEditProfile}
+                  className="px-5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Edit Profile
+                </button>
+                <button className="px-5 py-2 text-sm font-semibold text-white bg-slate-900 dark:bg-blue-600 rounded-xl hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/20">
+                  View Public Profile
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-8 text-center px-8 border-l border-slate-100 dark:border-slate-800 hidden md:flex">
+                <div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{blogs.length}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-semibold">Stories</div>
+                </div>
+                <div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-semibold">Followers</div>
+                </div>
+            </div>
           </div>
         )}
 
-        <h1 className="text-3xl font-bold mb-6 text-gray-800 text-center">
-          Your Blogs
-        </h1>
+        <h2 className="text-2xl font-bold mb-8 text-slate-900 dark:text-slate-100 flex items-center gap-3">
+          <span className="w-2 h-8 rounded-full bg-blue-500" />
+          Your Stories
+        </h2>
 
         {blogs.length === 0 ? (
-          <p className="text-gray-500 mt-4 text-center">
-            No blogs found. Start writing!
-          </p>
+          <div className="text-center py-20 bg-white dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
+            <p className="text-slate-500 dark:text-slate-400 mb-4">You haven't published any stories yet.</p>
+            <button className="px-6 py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-colors">
+                Write your first story
+            </button>
+          </div>
         ) : (
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {blogs.map((blog) => (
               <li
                 key={blog.id}
-                className="bg-white shadow-md rounded-xl p-5 hover:shadow-xl transition-all relative"
+                className="bg-white dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group"
               >
-                <div className="flex items-start space-x-4">
-                  <Avatar size="big" name={blog.author.name[0]} />
-                  <div className="flex-1">
-                    <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-                      {blog.title}
-                    </h2>
-                    <p className="text-gray-600 mt-2 text-sm md:text-base">
-                      {getTextPreview(blog.content)}
-                    </p>
-                    <p className="text-gray-400 text-xs mt-2">
-                      By {blog.author.name}
-                    </p>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                     <span className="px-2 py-1 rounded-md bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-bold uppercase tracking-wider">Published</span>
+                  </div>
+                  
+                  {/* Dropdown Menu */}
+                  <div className="relative" ref={(el) => (dropdownRefs.current[blog.id] = el)}>
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpen(menuOpen === blog.id ? null : blog.id);
+                        }}
+                        className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                    </button>
+
+                    {menuOpen === blog.id && (
+                        <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in-up">
+                        <button
+                            onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/publish/${blog.id}`);
+                            setMenuOpen(null);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition font-medium"
+                        >
+                            Edit Story
+                        </button>
+                        <button
+                            onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(blog.id);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition font-medium"
+                        >
+                            Delete
+                        </button>
+                        </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Dropdown Menu */}
-                <div
-                  className="absolute top-4 right-4"
-                  ref={(el) => (dropdownRefs.current[blog.id] = el)}
-                >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuOpen(menuOpen === blog.id ? null : blog.id);
-                    }}
-                    className="px-2 py-1 rounded hover:bg-gray-200 transition cursor-pointer text-lg font-bold"
-                    aria-label="More options"
-                  >
-                    &#x22EE;
-                  </button>
-
-                  {menuOpen === blog.id && (
-                    <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Add edit functionality here
-                          console.log("Edit blog:", blog.id);
-                          setMenuOpen(null);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition cursor-pointer rounded-t-lg"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(blog.id);
-                        }}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition cursor-pointer rounded-b-lg"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {blog.title}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3 mb-4 leading-relaxed">
+                    {getTextPreview(blog.content)}
+                </p>
+                
+                <div className="pt-4 border-t border-slate-50 dark:border-slate-800/50 flex items-center justify-between text-xs text-slate-400 font-medium">
+                    <span>Last updated recently</span>
+                    <span>{Math.ceil(blog.content.length / 100)} min read</span>
                 </div>
               </li>
             ))}
@@ -292,84 +349,129 @@ export const Dashboard = () => {
 
       {/* 🌫️ Edit Profile / Change Password Modal */}
       {isEditOpen && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-black/40 z-50 transition">
-          <div className="bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl rounded-2xl p-6 w-[90%] max-w-md text-white">
-            <h2 className="text-2xl font-semibold mb-5 text-center">
+        <div className="fixed inset-0 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm z-50 transition-opacity p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-8 w-full max-w-md relative overflow-hidden animate-fade-in-up border dark:border-slate-800">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-blue-600" />
+            
+            <h2 className="text-2xl font-bold mb-6 text-center text-slate-900 dark:text-slate-100">
               {isPasswordMode ? "Change Password" : "Edit Profile"}
             </h2>
 
             {!isPasswordMode ? (
-              <>
-                <input
-                  className="w-full px-3 py-2 mb-3 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  placeholder="Name"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                />
-                <input
-                  className="w-full px-3 py-2 mb-5 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  placeholder="Email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                />
-              </>
+              <div className="space-y-4">
+                {/* Avatar Upload */}
+                <div className="flex flex-col items-center mb-4">
+                  <div className="relative w-24 h-24 mb-2">
+                    {avatarPreview ? (
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar Preview"
+                        className="w-full h-full rounded-full object-cover border-4 border-slate-100 dark:border-slate-800"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-3xl font-bold border-4 border-slate-100 dark:border-slate-800">
+                        {editName[0]?.toUpperCase() || "A"}
+                      </div>
+                    )}
+                    <label className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg cursor-pointer transition-colors">
+                      <Upload size={16} />
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                      />
+                    </label>
+                    {avatarPreview && (
+                      <button
+                        onClick={removeAvatar}
+                        className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Click icon to upload photo</p>
+                </div>
+
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1 ml-1">Name</label>
+                    <input
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium"
+                    placeholder="Your Name"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1 ml-1">Email</label>
+                    <input
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium"
+                    placeholder="your@email.com"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    />
+                </div>
+              </div>
             ) : (
-              <>
+              <div className="space-y-4">
                 <input
-                  className="w-full px-3 py-2 mb-3 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium"
                   type="password"
-                  placeholder="Old Password"
+                  placeholder="Current Password"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                 />
                 <input
-                  className="w-full px-3 py-2 mb-5 bg-gray-700/60 border border-gray-500/40 rounded-md text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium"
                   type="password"
                   placeholder="New Password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
-              </>
+              </div>
             )}
 
             {message && (
-              <p className="text-sm text-center text-gray-200 mt-2">
+              <div className={`mt-4 p-3 rounded-xl text-sm font-medium text-center ${message.includes("❌") ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400" : "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400"}`}>
                 {message}
-              </p>
+              </div>
             )}
 
-            <div className="flex justify-between mt-5 gap-3">
+            <div className="flex flex-col gap-3 mt-8">
               {!isPasswordMode ? (
                 <>
                   <button
                     onClick={handleProfileUpdate}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg text-sm font-medium transition"
+                    className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-slate-900/20"
                   >
-                    Save
+                    Save Changes
                   </button>
-                  <button
-                    onClick={() => {
-                      setIsPasswordMode(true);
-                      setMessage("");
-                    }}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 py-2 rounded-lg text-sm font-medium transition"
-                  >
-                    Change Password
-                  </button>
-                  <button
-                    onClick={closeEditModal}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition"
-                  >
-                    Cancel
-                  </button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                        onClick={() => {
+                        setIsPasswordMode(true);
+                        setMessage("");
+                        }}
+                        className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold transition-colors"
+                    >
+                        Password
+                    </button>
+                    <button
+                        onClick={closeEditModal}
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 py-3 rounded-xl font-bold transition-colors"
+                    >
+                        Cancel
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
                   <button
                     onClick={handlePasswordUpdate}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg text-sm font-medium transition"
+                    className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-slate-900/20"
                   >
-                    Update
+                    Update Password
                   </button>
                   <button
                     onClick={() => {
@@ -378,9 +480,9 @@ export const Dashboard = () => {
                       setNewPassword("");
                       setMessage("");
                     }}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 py-2 rounded-lg text-sm font-medium transition"
+                    className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold transition-colors"
                   >
-                    Back
+                    Back to Profile
                   </button>
                 </>
               )}
