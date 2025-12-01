@@ -8,6 +8,7 @@ import {
 
 interface BlogCardProps {
   authorName: string;
+  authorAvatar?: string;
   title: string;
   content: string;
   publishedDate: string;
@@ -15,18 +16,21 @@ interface BlogCardProps {
   commentCount?: number;
   likeCount?: number;
   dislikeCount?: number;
+  imageUrl?: string;
   variant?: "list" | "grid";
 }
 
 export const BlogCard = ({
   id,
   authorName,
+  authorAvatar,
   title,
   content,
   publishedDate,
   commentCount = 0,
   likeCount = 0,
   dislikeCount = 0,
+  imageUrl,
   variant = "list",
 }: BlogCardProps) => {
   const readingTime = Math.ceil(content.length / 100);
@@ -38,7 +42,7 @@ export const BlogCard = ({
           <div className="p-6 flex-1 flex flex-col">
             {/* Author Info */}
             <div className="flex items-center gap-3 mb-4">
-              <Avatar name={authorName} size="small" />
+              <Avatar name={authorName} image={authorAvatar} size="small" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                   {authorName}
@@ -48,6 +52,17 @@ export const BlogCard = ({
                 </p>
               </div>
             </div>
+
+            {/* Cover Image (Grid View) */}
+            {imageUrl && (
+              <div className="h-48 w-full overflow-hidden">
+                <img
+                  src={imageUrl}
+                  alt={title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            )}
 
             {/* Title */}
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">
@@ -90,7 +105,7 @@ export const BlogCard = ({
         <div className="p-7">
           {/* Author Info */}
           <div className="flex items-center gap-3 mb-4">
-            <Avatar name={authorName} size="small" />
+            <Avatar name={authorName} image={authorAvatar} size="small" />
             <div className="flex items-center gap-2 text-sm">
               <span className="font-semibold text-slate-900 dark:text-slate-100">
                 {authorName}
@@ -147,9 +162,11 @@ export function Circle() {
 export function Avatar({
   name = "A",
   size = "small",
+  image,
 }: {
   name?: string;
   size?: "small" | "big";
+  image?: string;
 }) {
   return (
     <div
@@ -157,13 +174,21 @@ export function Avatar({
         size === "small" ? "w-9 h-9" : "w-12 h-12"
       } bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm`}
     >
-      <span
-        className={`${
-          size === "small" ? "text-sm" : "text-lg"
-        } font-semibold text-white`}
-      >
-        {name[0]?.toUpperCase() || "A"}
-      </span>
+      {image ? (
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <span
+          className={`${
+            size === "small" ? "text-sm" : "text-lg"
+          } font-semibold text-white`}
+        >
+          {name[0]?.toUpperCase() || "A"}
+        </span>
+      )}
     </div>
   );
 }

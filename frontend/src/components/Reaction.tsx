@@ -98,7 +98,7 @@ export const Reaction = ({ postId }: ReactionProps) => {
     <div className="flex items-center gap-4 mt-4">
       <button
         onClick={() => handleReaction("like")}
-        className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
+        className={`flex items-center gap-1 px-3 py-1 rounded-full border cursor-pointer ${
           userReaction === "like"
             ? "bg-blue-500 text-white border-blue-500"
             : "border-gray-300 text-gray-700"
@@ -109,7 +109,7 @@ export const Reaction = ({ postId }: ReactionProps) => {
       </button>
       <button
         onClick={() => handleReaction("dislike")}
-        className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
+        className={`flex items-center gap-1 px-3 py-1 rounded-full border cursor-pointer ${
           userReaction === "dislike"
             ? "bg-red-500 text-white border-red-500"
             : "border-gray-300 text-gray-700"

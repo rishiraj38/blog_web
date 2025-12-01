@@ -3,6 +3,7 @@ import { Appbar } from "./Appbar";
 import { Avatar } from "./BlogCard";
 import { Comments } from "./Comments";
 import { Reaction } from "./Reaction";
+import { Tooltip } from "./Tooltip";
 
 export const FullBlog = ({ blog }: { blog: Blog }) => {
   const formatDate = (dateStr: string) => {
@@ -29,17 +30,30 @@ export const FullBlog = ({ blog }: { blog: Blog }) => {
                 {blog.title}
               </h1>
 
+              {/* Cover Image */}
+              {blog.imageUrl && (
+                <div className="mb-10 rounded-2xl overflow-hidden shadow-lg">
+                  <img
+                    src={blog.imageUrl}
+                    alt={blog.title}
+                    className="w-full h-auto object-cover max-h-[500px]"
+                  />
+                </div>
+              )}
+
               {/* Author + Meta Info */}
               <div className="flex items-center gap-4 mb-12 pb-8 border-b border-slate-100 dark:border-slate-700">
-                <Avatar size="big" name={blog.author.name || "Anonymous"}  />
+                <Avatar size="big" name={blog.author.name || "Anonymous"} image={blog.author.avatar} />
                 <div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-slate-900 dark:text-white text-lg">
                       {blog.author.name || "Anonymous"}
                     </span>
-                    <button className="px-4 py-1 text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors">
-                      Follow
-                    </button>
+                    <Tooltip content="Coming Soon">
+                      <button disabled className="px-4 py-1 text-xs font-bold text-blue-700/50 dark:text-blue-300/50 bg-blue-100/50 dark:bg-blue-900/30 rounded-full cursor-not-allowed transition-colors">
+                        Follow
+                      </button>
+                    </Tooltip>
                   </div>
                   <div className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
                     {publishedDate} · {Math.ceil(blog.content.length / 100)} min read

@@ -6,7 +6,9 @@ import { useEffect, useState, useRef, type ChangeEvent } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { jwtDecode } from "jwt-decode";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Loader2, MoreVertical } from "lucide-react";
+import { useUpload } from "../hooks/useUpload";
+import { Tooltip } from "../components/Tooltip";
 
 interface Author {
   name: string;
@@ -57,16 +59,25 @@ export const Dashboard = () => {
     }
 
     try {
+      // Decode token for initial state
       const decoded: User = jwtDecode(token);
       setUser(decoded);
-      setEditName(decoded.name);
-      setEditEmail(decoded.email);
-      if (decoded.avatar) {
-        setEditAvatar(decoded.avatar);
-        setAvatarPreview(decoded.avatar);
+      
+      // Fetch fresh user details
+      const userResponse = await axios.get<User>(`${BACKEND_URL}/api/v1/user/details`, {
+        headers: { Authorization: token },
+      });
+      const freshUser = userResponse.data;
+      setUser(freshUser);
+      
+      setEditName(freshUser.name);
+      setEditEmail(freshUser.email);
+      if (freshUser.avatar) {
+        setEditAvatar(freshUser.avatar);
+        setAvatarPreview(freshUser.avatar);
       }
     } catch (e) {
-      console.error("Invalid token", e);
+      console.error("Error fetching user details", e);
     }
 
     try {
@@ -120,18 +131,28 @@ export const Dashboard = () => {
     }
   };
 
+  const { uploadImage, uploading: avatarUploading } = useUpload();
+
   // Handle Avatar Upload
-  const handleAvatarUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Show local preview immediately
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result as string;
-      setEditAvatar(base64String);
-      setAvatarPreview(base64String);
+      setAvatarPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
+
+    // Upload to backend
+    const url = await uploadImage(file);
+    if (url) {
+      setEditAvatar(url);
+    } else {
+      alert("Failed to upload avatar. Please try again.");
+      setAvatarPreview(user?.avatar || ""); // Revert to original avatar
+    }
   };
 
   const removeAvatar = () => {
@@ -239,20 +260,25 @@ export const Dashboard = () => {
         {user && (
           <div className="bg-white dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center gap-8 mb-12 relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-600" />
-            <Avatar size="big" name={user.name[0]}  />
+            <Avatar size="big" name={user.name} image={user.avatar} />
             <div className="text-center md:text-left flex-1">
               <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">{user.name}</h1>
               <p className="text-slate-500 dark:text-slate-400 mb-4">{user.email}</p>
               <div className="flex gap-3 justify-center md:justify-start">
                 <button
                   onClick={openEditProfile}
-                  className="px-5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  className="px-5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   Edit Profile
                 </button>
-                <button className="px-5 py-2 text-sm font-semibold text-white bg-slate-900 dark:bg-blue-600 rounded-xl hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/20">
-                  View Public Profile
-                </button>
+                <Tooltip content="Coming Soon">
+                  <button
+                    disabled
+                    className="px-5 py-2 text-sm font-semibold text-white bg-slate-900/50 dark:bg-blue-600/50 rounded-xl cursor-not-allowed transition-colors shadow-none"
+                  >
+                    View Public Profile
+                  </button>
+                </Tooltip>
               </div>
             </div>
             <div className="flex gap-8 text-center px-8 border-l border-slate-100 dark:border-slate-800 hidden md:flex">
@@ -276,7 +302,7 @@ export const Dashboard = () => {
         {blogs.length === 0 ? (
           <div className="text-center py-20 bg-white dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
             <p className="text-slate-500 dark:text-slate-400 mb-4">You haven't published any stories yet.</p>
-            <button className="px-6 py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-colors">
+            <button className="px-6 py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-colors cursor-pointer">
                 Write your first story
             </button>
           </div>
@@ -299,9 +325,9 @@ export const Dashboard = () => {
                         e.stopPropagation();
                         setMenuOpen(menuOpen === blog.id ? null : blog.id);
                         }}
-                        className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                        <MoreVertical size={20} />
                     </button>
 
                     {menuOpen === blog.id && (
@@ -312,7 +338,7 @@ export const Dashboard = () => {
                             navigate(`/publish/${blog.id}`);
                             setMenuOpen(null);
                             }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition font-medium"
+                            className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition font-medium cursor-pointer"
                         >
                             Edit Story
                         </button>
@@ -321,7 +347,7 @@ export const Dashboard = () => {
                             e.stopPropagation();
                             handleDelete(blog.id);
                             }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition font-medium"
+                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition font-medium cursor-pointer"
                         >
                             Delete
                         </button>
@@ -359,7 +385,6 @@ export const Dashboard = () => {
 
             {!isPasswordMode ? (
               <div className="space-y-4">
-                {/* Avatar Upload */}
                 <div className="flex flex-col items-center mb-4">
                   <div className="relative w-24 h-24 mb-2">
                     {avatarPreview ? (
@@ -373,13 +398,14 @@ export const Dashboard = () => {
                         {editName[0]?.toUpperCase() || "A"}
                       </div>
                     )}
-                    <label className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg cursor-pointer transition-colors">
-                      <Upload size={16} />
+                    <label className={`absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg cursor-pointer transition-colors ${avatarUploading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      {avatarUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
                       <input
                         type="file"
                         className="hidden"
                         accept="image/*"
                         onChange={handleAvatarUpload}
+                        disabled={avatarUploading}
                       />
                     </label>
                     {avatarPreview && (

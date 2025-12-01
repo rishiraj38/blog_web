@@ -170,8 +170,9 @@ blogRouter.get("/:id", async (c) => {
       id: true,
       title: true,
       content: true,
+      imageUrl: true, // Added imageUrl
       createdAt: true,
-      author: { select: { name: true } },
+      author: { select: { name: true, avatar: true } },
       comments: true,
       reactions: { select: { type: true } },
     },

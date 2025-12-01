@@ -120,8 +120,31 @@ userRouter.use(async (c, next) => {
     await next();
   } catch (e) {
     console.error(e);
-    c.status(401);
     return c.json({ message: "Unauthorized" });
+  }
+});
+
+userRouter.get("/details", async (c) => {
+  const userId = c.get("userId");
+  const prisma = new PrismaClient({ datasourceUrl: c.env.my_db }).$extends(
+    withAccelerate()
+  );
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, email: true, avatar: true },
+    });
+
+    if (!user) {
+      c.status(404);
+      return c.json({ error: "User not found" });
+    }
+
+    return c.json(user);
+  } catch (e) {
+    c.status(500);
+    return c.json({ error: "Error fetching user details" });
   }
 });
 
@@ -135,7 +158,8 @@ userRouter.put("/profile", async (c) => {
   const prisma = new PrismaClient({ datasourceUrl: c.env.my_db }).$extends(
     withAccelerate()
   );
-  const { name, email } = await c.req.json();
+  const body = await c.req.json();
+  const { name, email } = body;
 
   try {
     const updatedUser = await prisma.user.update({
@@ -143,6 +167,7 @@ userRouter.put("/profile", async (c) => {
       data: {
         ...(name && { name }),
         ...(email && { email }),
+        ...(body.avatar && { avatar: body.avatar }),
       },
       select: { id: true, name: true, email: true, avatar: true },
     });

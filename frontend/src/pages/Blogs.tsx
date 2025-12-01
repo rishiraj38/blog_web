@@ -99,7 +99,7 @@ export const Blogs = () => {
                         category === "All" ? null : category
                       )
                     }
-                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
                       (category === "All" && !selectedCategory) ||
                       selectedCategory === category
                         ? "bg-blue-600 text-white shadow-sm"
@@ -147,7 +147,7 @@ export const Blogs = () => {
                   <div className="flex gap-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-lg">
                     <button
                       onClick={() => setViewMode("list")}
-                      className={`p-2 rounded-md transition-all ${
+                      className={`p-2 rounded-md transition-all cursor-pointer ${
                         viewMode === "list"
                           ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-500 shadow-sm"
                           : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
@@ -158,7 +158,7 @@ export const Blogs = () => {
                     </button>
                     <button
                       onClick={() => setViewMode("grid")}
-                      className={`p-2 rounded-md transition-all ${
+                      className={`p-2 rounded-md transition-all cursor-pointer ${
                         viewMode === "grid"
                           ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-500 shadow-sm"
                           : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
@@ -216,12 +216,14 @@ export const Blogs = () => {
                       key={blog.id}
                       id={blog.id}
                       authorName={blog.author.name || "Anonymous"}
+                      authorAvatar={blog.author.avatar}
                       title={blog.title}
                       content={blog.content}
                       publishedDate={formatDate(blog.createdAt)}
                       commentCount={blog.commentCount || 0}
                       likeCount={reactions.likes}
                       dislikeCount={reactions.dislikes}
+                      imageUrl={blog.imageUrl}
                       variant={viewMode}
                     />
                   );

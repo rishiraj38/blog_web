@@ -2,6 +2,8 @@ import { Avatar } from "./BlogCard";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
+import axios from "axios";
+import { BACKEND_URL } from "../config";
 import { LogOut, LayoutDashboard, PenSquare, Sun, Moon } from "lucide-react";
 import logo from "../assets/logo.png";
 import { useTheme } from "../context/ThemeContext";
@@ -21,15 +23,23 @@ export const Appbar = () => {
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded: User = jwtDecode(token);
-        setUser(decoded);
-      } catch (e) {
-        console.error("Invalid token", e);
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const decoded: User = jwtDecode(token);
+          setUser(decoded);
+
+          const response = await axios.get<User>(`${BACKEND_URL}/api/v1/user/details`, {
+            headers: { Authorization: token },
+          });
+          setUser(response.data);
+        } catch (e) {
+          console.error("Error fetching user", e);
+        }
       }
-    }
+    };
+    fetchUser();
   }, []);
 
   const handleLogout = () => {
@@ -74,7 +84,7 @@ export const Appbar = () => {
       <div className="flex items-center space-x-6">
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+          className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 cursor-pointer"
         >
           {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
         </button>
@@ -82,7 +92,7 @@ export const Appbar = () => {
         <Link to={`/publish`}>
           <button
             type="button"
-            className="flex items-center gap-2 text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 focus:ring-4 focus:ring-slate-300 font-bold rounded-xl text-sm px-5 py-2.5 transition-all shadow-lg shadow-slate-900/20 hover:shadow-slate-900/40 hover:-translate-y-0.5"
+            className="flex items-center gap-2 text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 focus:ring-4 focus:ring-slate-300 font-bold rounded-xl text-sm px-5 py-2.5 transition-all shadow-lg shadow-slate-900/20 hover:shadow-slate-900/40 hover:-translate-y-0.5 cursor-pointer"
           >
             <PenSquare size={18} />
             <span>New Post</span>
@@ -94,14 +104,14 @@ export const Appbar = () => {
             className="cursor-pointer hover:scale-105 transition-transform duration-200"
             onClick={() => setMenuOpen((prev) => !prev)}
           >
-            {user && <Avatar size={"big"} name={user.name[0]}  />}
+            {user && <Avatar size={"big"} name={user.name} image={user.avatar} />}
           </div>
 
           {/* Dropdown Menu */}
           {menuOpen && user && (
             <div className="absolute right-0 mt-4 w-64 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/40 dark:border-slate-700 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden z-50 animate-fade-in-up">
               <div className="flex items-center space-x-3 px-5 py-4 bg-slate-50/50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
-                <Avatar size={"small"} name={user.name[0]}  />
+                <Avatar size={"small"} name={user.name} image={user.avatar} />
                 <div className="overflow-hidden">
                   <p className="font-bold text-slate-900 dark:text-white truncate">{user.name}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>

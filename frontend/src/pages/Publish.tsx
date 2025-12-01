@@ -4,6 +4,7 @@ import { BACKEND_URL } from "../config";
 import { useNavigate, useParams } from "react-router-dom";
 import { type ChangeEvent, useState, useEffect } from "react";
 import { Image as ImageIcon, Type, FileText, Upload, Loader2, X } from "lucide-react";
+import { useUpload } from "../hooks/useUpload";
 
 export const Publish = () => {
   const { id } = useParams();
@@ -41,17 +42,25 @@ export const Publish = () => {
     }
   }, [id]);
 
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const { uploadImage, uploading: imageUploading } = useUpload();
+
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result as string;
-      setImageUrl(base64String);
-      setImagePreview(base64String);
+      setImagePreview(reader.result as string);
     };
     reader.readAsDataURL(file);
+
+    const url = await uploadImage(file);
+    if (url) {
+      setImageUrl(url);
+    } else {
+      alert("Failed to upload image. Please try again.");
+      setImagePreview(""); // Reset preview on failure
+    }
   };
 
   const removeImage = () => {
@@ -162,7 +171,13 @@ export const Publish = () => {
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <Upload size={40} className="text-slate-400 dark:text-slate-500 mb-3 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
                     <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                      <span className="text-blue-600 dark:text-blue-400">Click to upload</span> or drag and drop
+                      {imageUploading ? (
+                        <span className="text-blue-600 dark:text-blue-400">Uploading...</span>
+                      ) : (
+                        <>
+                          <span className="text-blue-600 dark:text-blue-400">Click to upload</span> or drag and drop
+                        </>
+                      )}
                     </p>
                     <p className="text-xs text-slate-400 dark:text-slate-500">PNG, JPG or GIF</p>
                   </div>
@@ -210,7 +225,7 @@ export const Publish = () => {
               <button
                 onClick={handlePublish}
                 disabled={loading}
-                className={`flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                className={`flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                   loading ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
@@ -220,7 +235,7 @@ export const Publish = () => {
 
               <button
                 onClick={() => navigate("/blogs")}
-                className="px-8 bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                className="px-8 bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
                 Cancel
               </button>
