@@ -107,10 +107,11 @@ export const BlogCard = ({
     );
   }
 
+
   // List variant (default)
   return (
     <Link to={`/blog/${id}`}>
-      <article className="group relative bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-8 first:pt-0 last:border-0">
+      <article className="group relative border-b border-slate-200 dark:border-slate-800 py-8 first:pt-0 last:border-0">
         <div className="flex flex-col md:flex-row gap-8 items-start">
           {/* Content Section */}
           <div className="flex-1 min-w-0 flex flex-col h-full">
@@ -175,8 +176,8 @@ export const BlogCard = ({
 
           {/* Image Section */}
           {imageUrl && (
-            <div className="w-full md:w-48 lg:w-56 shrink-0 order-first md:order-last">
-              <div className="h-56 md:h-48 lg:h-56 w-full rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+            <div className="w-full md:w-40 lg:w-48 shrink-0 order-first md:order-last">
+              <div className="h-48 md:h-28 lg:h-32 w-full rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
                 <img
                   src={imageUrl}
                   alt={title}

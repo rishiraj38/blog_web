@@ -48,6 +48,13 @@ export const Publish = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const maxSize = 10 * 1024 * 1024; 
+    if (file.size > maxSize) {
+      alert("Image is too large! Please use an image smaller than 10MB.\n\nCurrent size: " + (file.size / 1024 / 1024).toFixed(2) + "MB");
+      e.target.value = ""; 
+      return;
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -127,6 +134,40 @@ export const Publish = () => {
     );
   }
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    // Check file size (10MB limit for Cloudinary free tier)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      alert("Image is too large! Please use an image smaller than 10MB.\n\nCurrent size: " + (file.size / 1024 / 1024).toFixed(2) + "MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    const url = await uploadImage(file);
+    if (url) {
+      setImageUrl(url);
+    } else {
+      alert("Failed to upload image. Please try again.");
+      setImagePreview("");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Appbar />
@@ -167,7 +208,11 @@ export const Publish = () => {
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors group">
+                <label 
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors group"
+                >
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <Upload size={40} className="text-slate-400 dark:text-slate-500 mb-3 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
                     <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
@@ -186,6 +231,7 @@ export const Publish = () => {
                     className="hidden"
                     accept="image/*"
                     onChange={handleImageUpload}
+                    disabled={imageUploading}
                   />
                 </label>
               )}
@@ -224,13 +270,13 @@ export const Publish = () => {
             <div className="flex gap-4 pt-4">
               <button
                 onClick={handlePublish}
-                disabled={loading}
+                disabled={loading || imageUploading}
                 className={`flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
-                  loading ? "opacity-70 cursor-not-allowed" : ""
+                  (loading || imageUploading) ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
-                {loading && <Loader2 size={20} className="animate-spin" />}
-                {loading ? (id ? "Updating..." : "Publishing...") : (id ? "Update Post" : "Publish Post")}
+                {(loading || imageUploading) && <Loader2 size={20} className="animate-spin" />}
+                {imageUploading ? "Uploading Image..." : (loading ? (id ? "Updating..." : "Publishing...") : (id ? "Update Post" : "Publish Post"))}
               </button>
 
               <button
