@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import {
   ChatBubbleLeftIcon,
-  HandThumbDownIcon,
   HandThumbUpIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
@@ -29,7 +28,6 @@ export const BlogCard = ({
   publishedDate,
   commentCount = 0,
   likeCount = 0,
-  dislikeCount = 0,
   imageUrl,
   variant = "list",
 }: BlogCardProps) => {
@@ -53,26 +51,37 @@ export const BlogCard = ({
               </div>
             </div>
 
-            {/* Cover Image (Grid View) */}
-            {imageUrl && (
-              <div className="h-48 w-full overflow-hidden">
+            {/* Image Section */}
+          {imageUrl && (
+            <div className="w-full md:w-48 lg:w-56 shrink-0 order-first md:order-last">
+              <div className="h-56 md:h-48 lg:h-56 w-full rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
                 <img
                   src={imageUrl}
                   alt={title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
-            )}
-
-            {/* Title */}
+            </div>
+          )}  {/* Title */}
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">
               {title}
             </h2>
 
             {/* Content Preview */}
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-3 mb-4 flex-1">
-              {content}
-            </p>
+              <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed line-clamp-2 md:line-clamp-3 hidden sm:block font-serif">
+                {(() => {
+                  const parser = new DOMParser();
+                  const doc = parser.parseFromString(content, "text/html");
+                  // Remove style and script tags to avoid showing CSS/JS code
+                  const toRemove = doc.querySelectorAll("style, script");
+                  toRemove.forEach((el) => el.remove());
+                  const plainText = doc.body.textContent || "";
+                  return (
+                    plainText.slice(0, 250) +
+                    (plainText.length > 250 ? "..." : "")
+                  );
+                })()}
+              </p>
 
             {/* Footer Stats */}
             <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
@@ -101,54 +110,81 @@ export const BlogCard = ({
   // List variant (default)
   return (
     <Link to={`/blog/${id}`}>
-      <article className="group relative bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-800 transition-all duration-300">
-        <div className="p-7">
-          {/* Author Info */}
-          <div className="flex items-center gap-3 mb-4">
-            <Avatar name={authorName} image={authorAvatar} size="small" />
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {authorName}
-              </span>
-              <Circle />
-              <span className="text-slate-500 dark:text-slate-400">
-                {publishedDate}
-              </span>
+      <article className="group relative bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-8 first:pt-0 last:border-0">
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          {/* Content Section */}
+          <div className="flex-1 min-w-0 flex flex-col h-full">
+            {/* Author Info */}
+            <div className="flex items-center gap-2 mb-3">
+              <Avatar name={authorName} image={authorAvatar} size="small" />
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-slate-900 dark:text-slate-100">
+                  {authorName}
+                </span>
+                <span className="text-slate-500 dark:text-slate-400">·</span>
+                <span className="text-slate-500 dark:text-slate-400">
+                  {publishedDate}
+                </span>
+              </div>
+            </div>
+
+            {/* Title & Preview */}
+            <div className="mb-4">
+              <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors break-words">
+                {title}
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed line-clamp-2 md:line-clamp-3 hidden sm:block font-serif break-words">
+                {(() => {
+                  const parser = new DOMParser();
+                  const doc = parser.parseFromString(content, "text/html");
+                  const toRemove = doc.querySelectorAll("style, script");
+                  toRemove.forEach((el) => el.remove());
+                  const plainText = doc.body.textContent || "";
+                  return (
+                    plainText.slice(0, 200) +
+                    (plainText.length > 200 ? "..." : "")
+                  );
+                })()}
+              </p>
+            </div>
+
+            {/* Footer Stats */}
+            <div className="mt-auto flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+                  <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full text-xs font-medium">
+                    Article
+                  </span>
+                  <span className="text-xs text-slate-400">•</span>
+                  <span>{readingTime} min read</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-1.5 text-sm hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+                  <ChatBubbleLeftIcon className="w-4 h-4" />
+                  <span className="font-medium">{commentCount}</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-sm hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+                  <HandThumbUpIcon className="w-4 h-4" />
+                  <span className="font-medium">{likeCount}</span>
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Title */}
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">
-            {title}
-          </h2>
-
-          {/* Content Preview */}
-          <p className="text-slate-600 dark:text-slate-400 text-[15px] leading-relaxed line-clamp-2 mb-5">
-            {content}
-          </p>
-
-          {/* Footer Stats */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-              <ClockIcon className="w-4 h-4" />
-              <span className="font-medium">{readingTime} min read</span>
+          {/* Image Section */}
+          {imageUrl && (
+            <div className="w-full md:w-48 lg:w-56 shrink-0 order-first md:order-last">
+              <div className="h-56 md:h-48 lg:h-56 w-full rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+                <img
+                  src={imageUrl}
+                  alt={title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
             </div>
-            
-            <div className="flex items-center gap-4 text-sm">
-              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                <ChatBubbleLeftIcon className="w-4 h-4" />
-                <span className="font-medium">{commentCount}</span>
-              </span>
-              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 transition-colors">
-                <HandThumbUpIcon className="w-4 h-4" />
-                <span className="font-medium">{likeCount}</span>
-              </span>
-              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                <HandThumbDownIcon className="w-4 h-4" />
-                <span className="font-medium">{dislikeCount}</span>
-              </span>
-            </div>
-          </div>
+          )}
         </div>
       </article>
     </Link>

@@ -85,9 +85,9 @@ export const Blogs = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Feed */}
-          <main className="flex-1">
+          <main className="flex-1 min-w-0">
             {/* Category Pills */}
             <div className="mb-6 overflow-x-auto">
               <div className="flex gap-2 pb-2">
@@ -234,7 +234,7 @@ export const Blogs = () => {
 
           {/* Sidebar (Hidden on mobile) */}
           <div className="hidden lg:block w-80 shrink-0">
-            <div className="sticky top-28">
+            <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pb-4 custom-scrollbar">
               <SideBar blogs={blogs} loading={loading} />
             </div>
           </div>
