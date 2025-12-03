@@ -72,7 +72,6 @@ export const BlogCard = ({
                 {(() => {
                   const parser = new DOMParser();
                   const doc = parser.parseFromString(content, "text/html");
-                  // Remove style and script tags to avoid showing CSS/JS code
                   const toRemove = doc.querySelectorAll("style, script");
                   toRemove.forEach((el) => el.remove());
                   const plainText = doc.body.textContent || "";
@@ -108,7 +107,6 @@ export const BlogCard = ({
   }
 
 
-  // List variant (default)
   return (
     <Link to={`/blog/${id}`}>
       <article className="group relative border-b border-slate-200 dark:border-slate-800 py-8 first:pt-0 last:border-0">

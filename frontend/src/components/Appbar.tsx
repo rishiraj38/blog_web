@@ -52,7 +52,6 @@ export const Appbar = () => {
     navigate("/dashboard");
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

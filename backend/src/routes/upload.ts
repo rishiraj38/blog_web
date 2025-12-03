@@ -13,7 +13,6 @@ export const uploadRouter = new Hono<{
   };
 }>();
 
-// Authentication middleware
 uploadRouter.use(async (c, next) => {
   const jwt = c.req.header("Authorization");
   if (!jwt) {
@@ -35,7 +34,6 @@ uploadRouter.use(async (c, next) => {
   }
 });
 
-// POST /api/v1/upload - Protected route for image uploads
 uploadRouter.post("/", async (c) => {
   try {
     const body = await c.req.parseBody();
@@ -48,7 +46,6 @@ uploadRouter.post("/", async (c) => {
 
     const cloudName = c.env.CLOUDINARY_CLOUD_NAME;
     
-    // Generate signature and upload to Cloudinary
     const timestamp = Math.round((new Date()).getTime() / 1000);
     const stringToSign = `timestamp=${timestamp}${c.env.CLOUDINARY_API_SECRET}`;
     

@@ -26,7 +26,7 @@ export const FullBlog = ({ blog }: { blog: Blog }) => {
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="p-8 md:p-16 relative">
               {/* Title */}
-              <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.1] mb-8 tracking-tight">
+              <h1 className="text-1xl md:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.1] mb-8 tracking-tight">
                 {blog.title}
               </h1>
 

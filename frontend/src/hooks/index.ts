@@ -19,7 +19,6 @@ export interface Blog {
   };
 }
 
-// Hook to fetch a single blog by ID
 export const useBlog = ({ id }: { id: string }) => {
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -48,7 +47,6 @@ export const useBlog = ({ id }: { id: string }) => {
   return { loading, blog };
 };
 
-// Hook to fetch all blogs
 export const useBlogs = () => {
   const [loading, setLoading] = useState(true);
   const [blogs, setBlogs] = useState<Blog[]>([]);

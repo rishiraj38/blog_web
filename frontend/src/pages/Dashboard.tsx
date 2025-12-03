@@ -39,7 +39,6 @@ export const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Edit Profile States
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPasswordMode, setIsPasswordMode] = useState(false);
   const [editName, setEditName] = useState("");
@@ -50,7 +49,6 @@ export const Dashboard = () => {
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  // Fetch blogs + user
   const fetchUserBlogs = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -59,11 +57,9 @@ export const Dashboard = () => {
     }
 
     try {
-      // Decode token for initial state
       const decoded: User = jwtDecode(token);
       setUser(decoded);
       
-      // Fetch fresh user details
       const userResponse = await axios.get<User>(`${BACKEND_URL}/api/v1/user/details`, {
         headers: { Authorization: token },
       });
@@ -109,7 +105,6 @@ export const Dashboard = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Delete Blog with confirmation
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this blog?")) {
       return;
@@ -123,7 +118,7 @@ export const Dashboard = () => {
         headers: { Authorization: token },
       });
       setBlogs((prev) => prev.filter((b) => b.id !== id));
-      setMenuOpen(null); // Close dropdown after deletion
+      setMenuOpen(null);
       alert("Blog deleted successfully!");
     } catch (error) {
       console.error("Error deleting blog:", error);
@@ -133,25 +128,22 @@ export const Dashboard = () => {
 
   const { uploadImage, uploading: avatarUploading } = useUpload();
 
-  // Handle Avatar Upload
   const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Show local preview immediately
     const reader = new FileReader();
     reader.onloadend = () => {
       setAvatarPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
 
-    // Upload to backend
     const url = await uploadImage(file);
     if (url) {
       setEditAvatar(url);
     } else {
       alert("Failed to upload avatar. Please try again.");
-      setAvatarPreview(user?.avatar || ""); // Revert to original avatar
+      setAvatarPreview(user?.avatar || "");
     }
   };
 
@@ -160,7 +152,6 @@ export const Dashboard = () => {
     setAvatarPreview("");
   };
 
-  // Update Profile
   const handleProfileUpdate = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -187,7 +178,6 @@ export const Dashboard = () => {
     }
   };
 
-  // Update Password
   const handlePasswordUpdate = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -209,7 +199,6 @@ export const Dashboard = () => {
     }
   };
 
-  // Open Modal
   const openEditProfile = () => {
     setMessage("");
     setIsPasswordMode(false);
@@ -222,7 +211,6 @@ export const Dashboard = () => {
     }
   };
 
-  // Close Modal
   const closeEditModal = () => {
     setIsEditOpen(false);
     setIsPasswordMode(false);
@@ -231,7 +219,6 @@ export const Dashboard = () => {
     setMessage("");
   };
 
-  // Strip HTML tags for preview
   const getTextPreview = (html: string, maxLength: number = 150): string => {
     const temp = document.createElement("div");
     temp.innerHTML = html;

@@ -36,9 +36,6 @@ export const Blogs = () => {
         blog.content.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Note: Category filtering would need backend support
-    // For now, we'll skip it but keep the UI
-
     filtered.sort((a, b) => {
       if (sortOption === "newest") {
         return (

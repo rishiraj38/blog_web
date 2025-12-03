@@ -16,11 +16,10 @@ export const Comments = ({ blogId }: { blogId: string }) => {
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Format date nicely
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
-    const diff = (now.getTime() - date.getTime()) / 1000; // seconds
+    const diff = (now.getTime() - date.getTime()) / 1000;
 
     if (diff < 60) return "just now";
     if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
@@ -34,7 +33,6 @@ export const Comments = ({ blogId }: { blogId: string }) => {
     });
   };
 
-  // Fetch comments
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -54,7 +52,6 @@ export const Comments = ({ blogId }: { blogId: string }) => {
     fetchComments();
   }, [blogId]);
 
-  // Submit new comment
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -82,8 +79,6 @@ export const Comments = ({ blogId }: { blogId: string }) => {
       alert("Failed to post comment");
     }
   };
-
-  // Function to generate initials avatar if no image
 
   return (
     <div className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-8">

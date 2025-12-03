@@ -66,7 +66,7 @@ export const Publish = () => {
       setImageUrl(url);
     } else {
       alert("Failed to upload image. Please try again.");
-      setImagePreview(""); // Reset preview on failure
+      setImagePreview(""); 
     }
   };
 
@@ -146,8 +146,7 @@ export const Publish = () => {
     const file = e.dataTransfer.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
 
-    // Check file size (10MB limit for Cloudinary free tier)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       alert("Image is too large! Please use an image smaller than 10MB.\n\nCurrent size: " + (file.size / 1024 / 1024).toFixed(2) + "MB");
       return;

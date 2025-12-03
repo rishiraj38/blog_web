@@ -23,13 +23,13 @@ export const LandingPage = () => {
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate("/signin")}
-              className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
             >
               Sign In
             </button>
             <button
               onClick={() => navigate("/signup")}
-              className="px-6 py-2.5 text-sm font-semibold text-white bg-slate-900 dark:bg-blue-600 rounded-xl hover:bg-slate-800 dark:hover:bg-blue-700 transition-all transform hover:scale-105 shadow-xl shadow-slate-900/20"
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-slate-900 dark:bg-blue-600 rounded-xl hover:bg-slate-800 dark:hover:bg-blue-700 transition-all transform hover:scale-105 shadow-xl shadow-slate-900/20 cursor-pointer"
             >
               Get Started
             </button>

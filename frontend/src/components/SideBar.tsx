@@ -12,7 +12,6 @@ type SideBarProps = {
 };
 
 export const SideBar = ({ blogs, loading }: SideBarProps) => {
-  // Take first 3 blogs if available
   const featuredBlogs = blogs.slice(0, 3);
 
   const formatDate = (dateStr: string) => {

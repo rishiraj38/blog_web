@@ -15,7 +15,6 @@ export const blogRouter = new Hono<{
   };
 }>();
 
-// Authentication middleware
 blogRouter.use(async (c, next) => {
   const jwt = c.req.header("Authorization");
   if (!jwt) {
@@ -33,7 +32,6 @@ blogRouter.use(async (c, next) => {
   await next();
 });
 
-// Create a blog post
 blogRouter.post("/", async (c) => {
   const userId = c.get("userId");
   const prisma = new PrismaClient({
@@ -59,7 +57,6 @@ blogRouter.post("/", async (c) => {
   return c.json({ id: post.id });
 });
 
-// Update a blog post
 blogRouter.put("/", async (c) => {
   const userId = c.get("userId");
   const prisma = new PrismaClient({
@@ -81,34 +78,32 @@ blogRouter.put("/", async (c) => {
     data: {
       title: body.title,
       content: body.content,
-      imageUrl: body.imageUrl, // Added imageUrl
+      imageUrl: body.imageUrl, 
     },
   });
 
   return c.text("updated post");
 });
 
-// Get all blogs (bulk) with comment and reaction counts
 blogRouter.get("/bulk", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.my_db,
   }).$extends(withAccelerate());
 
-  // Fetch all posts with author, comments, and reactions
+
   const blogs = await prisma.post.findMany({
     select: {
       id: true,
       title: true,
       content: true,
-      imageUrl: true, // Added imageUrl
+      imageUrl: true, 
       createdAt: true,
-      author: { select: { name: true, avatar: true } }, // Added avatar
-      comments: true, // for comment count
-      reactions: { select: { type: true } }, // for reaction counts
+      author: { select: { name: true, avatar: true } }, 
+      comments: true, 
+      reactions: { select: { type: true } }, 
     },
   });
 
-  // Map to include counts only
   const formattedBlogs = blogs.map((post) => {
     const likeCount = post.reactions.filter((r) => r.type === "like").length;
     const dislikeCount = post.reactions.filter(
@@ -119,7 +114,7 @@ blogRouter.get("/bulk", async (c) => {
       id: post.id,
       title: post.title,
       content: post.content,
-      imageUrl: post.imageUrl, // Added imageUrl
+      imageUrl: post.imageUrl, 
       createdAt: post.createdAt,
       author: post.author,
       commentCount: post.comments.length,
@@ -134,7 +129,6 @@ blogRouter.get("/bulk", async (c) => {
 });
 
 
-// Get blogs by current user
 blogRouter.get("/filter", async (c) => {
   const userId = c.get("userId");
   const prisma = new PrismaClient({
@@ -147,17 +141,16 @@ blogRouter.get("/filter", async (c) => {
       content: true,
       title: true,
       id: true,
-      imageUrl: true, // Added imageUrl
+      imageUrl: true, 
       authorId: true,
       createdAt: true,
-      author: { select: { name: true, avatar: true } }, // Added avatar
+      author: { select: { name: true, avatar: true } }, 
     },
   });
 
   return c.json({ blogs });
 });
 
-// Get a single post by ID with comment and reaction counts
 blogRouter.get("/:id", async (c) => {
   const id = c.req.param("id");
   const prisma = new PrismaClient({
@@ -170,7 +163,7 @@ blogRouter.get("/:id", async (c) => {
       id: true,
       title: true,
       content: true,
-      imageUrl: true, // Added imageUrl
+      imageUrl: true, 
       createdAt: true,
       author: { select: { name: true, avatar: true } },
       comments: true,
@@ -196,7 +189,6 @@ blogRouter.get("/:id", async (c) => {
   });
 });
 
-// Delete a blog post
 blogRouter.delete("/:id", async (c) => {
   const userId = c.get("userId");
   const id = c.req.param("id");
