@@ -6,6 +6,7 @@ import { Blog } from "./pages/Blog";
 import { Blogs } from "./pages/Blogs";
 import { Publish } from "./pages/Publish";
 import { Dashboard } from "./pages/Dashboard"; 
+import { AISummarize } from "./pages/AISummarize";
 import { ThemeProvider } from "./context/ThemeContext";
 import type { JSX } from "react";
 
@@ -57,6 +58,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ai-summarize"
+            element={
+              <ProtectedRoute>
+                <AISummarize />
               </ProtectedRoute>
             }
           />
